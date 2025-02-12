@@ -2,16 +2,14 @@ import sys
 import unittest
 import os
 
-# 
-
 # Discover all tests in the 'tests' folder
 def run_tests():
   # Set the start directory for test discovery
   start_dir = os.path.dirname(__file__)
   print("Running tests in " + start_dir)
   
-  # Discover all test cases (files ending with .test.py)')
-  test_suite = unittest.defaultTestLoader.discover(start_dir, pattern='*.test.py', top_level_dir=start_dir)
+  # Discover all test cases (files ending with Test.py)')
+  test_suite = unittest.defaultTestLoader.discover(start_dir, pattern='*Test.py', top_level_dir=start_dir)
   
   # Run the discovered test cases
   runner = unittest.TextTestRunner()
