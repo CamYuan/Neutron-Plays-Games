@@ -62,11 +62,11 @@ class BlackjackCardTest(unittest.TestCase):
     c1 = BlackjackCard(Rank.ACE, Suits.HEARTS)
     c2 = BlackjackCard(Rank.ACE, Suits.HEARTS)
     self.assertEqual(c1, c2)
+    
+    c2 = BlackjackCard(Rank.ACE, Suits.CLUBS)
+    self.assertEqual(c1, c2)
 
     c2 = BlackjackCard(Rank.EIGHT, Suits.HEARTS)
-    self.assertNotEqual(c1, c2)
-
-    c2 = BlackjackCard(Rank.ACE, Suits.CLUBS)
     self.assertNotEqual(c1, c2)
     
     c2 = "something"

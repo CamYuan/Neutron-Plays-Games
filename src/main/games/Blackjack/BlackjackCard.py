@@ -14,7 +14,7 @@ class BlackjackCard:
     
   def __eq__(self, other):
     if isinstance(other, BlackjackCard):
-      return self.rank == other.rank and self.suit == other.suit
+      return self.rank == other.rank 
     return False
   
   def value(self):
