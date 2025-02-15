@@ -3,6 +3,7 @@ import pickle
 import sys
 import time
 from pathlib import Path
+import logging
 
 project_root = Path(__file__).resolve().parents[3]
 output_dir='output'
@@ -12,13 +13,12 @@ def saveFile(filename: str, data: any) -> str:
     timeString = time.strftime("%Y%m%d-%H%M%S")
     filename = filename + "_" + timeString + ".pickle"  # Use .pkl as the extension
     file_path = os.path.join(output_path, filename)
-    print(file_path)
     with open(file_path, "wb") as pickle_out:
         pickle.dump(data, pickle_out)
-    print(f"Data has been successfully saved to {file_path}.")
+    logging.debug(f"Data has been successfully saved to {file_path}.")
     return file_path
   except Exception as e:
-    print(f"An error occurred: {e}")
+    logging.critical(f"An error occurred: {e}")
     sys.exit(1)
     
 def loadFile(filename: str) -> any:
@@ -28,7 +28,7 @@ def loadFile(filename: str) -> any:
         data = pickle.load(pickle_in)
     return data
   except Exception as e:
-      print(f"An error occurred while loading the file {filename}: {e}")
+      logging.critical(f"An error occurred while loading the file {filename}: {e}")
       sys.exit(1)
     
   

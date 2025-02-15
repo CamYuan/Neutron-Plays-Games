@@ -10,8 +10,8 @@ def run_tests():
   test_suite = unittest.defaultTestLoader.discover(start_dir, pattern='*Test.py')
   
   # Print a summary of the discovered tests
-  for test in test_suite._tests:
-    print(test)
+  # for test in test_suite._tests:
+  #   print(test)
   
   # Run the discovered test cases
   runner = unittest.TextTestRunner()
