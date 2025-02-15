@@ -12,9 +12,12 @@ class BlackjackCard:
     else:
       return self.rank.value[1] + self.suit.value
     
+  '''
+  in the context of blackjack, 10, J, Q, and K are considered equal
+  '''
   def __eq__(self, other):
     if isinstance(other, BlackjackCard):
-      return self.rank == other.rank 
+      return self.rank == other.rank or (self.rank.value[0] >= 10 and other.rank.value[0] >= 10)
     return False
   
   def value(self):

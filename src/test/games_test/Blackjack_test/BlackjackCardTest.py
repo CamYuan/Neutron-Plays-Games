@@ -65,12 +65,18 @@ class BlackjackCardTest(unittest.TestCase):
     
     c2 = BlackjackCard(Rank.ACE, Suits.CLUBS)
     self.assertEqual(c1, c2)
+    
+    c1 = BlackjackCard(Rank.TEN, Suits.CLUBS)
+    c2 = BlackjackCard(Rank.JACK, Suits.CLUBS)
+    self.assertEqual(c1, c2)
 
     c2 = BlackjackCard(Rank.EIGHT, Suits.HEARTS)
     self.assertNotEqual(c1, c2)
     
     c2 = "something"
     self.assertNotEqual(c1, c2)
+    
+    
     
 if __name__ == '__main__':
   unittest.main()
