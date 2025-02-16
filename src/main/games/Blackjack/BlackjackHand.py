@@ -24,8 +24,7 @@ class BlackjackHand:
         self._splitFromAces: bool = splitAces
 
     def __repr__(self):
-        string = ""
-        return string.join(str(self._cards))
+        return ' '.join([str(card) for card in self._cards])
 
     def addCard(self, card: BlackjackCard):
         self._cards.append(card)
@@ -68,8 +67,10 @@ class BlackjackHand:
     def doubleDown(self):
       self.bet *= 2
 
-    def splitHand(self):
+    def splitHand(self) -> 'BlackjackHand':
       if self._cards[0].value() == 1:
           self._splitFromAces = True
-      return self._cards.pop()
+      newHand = BlackjackHand(self.bet, self._splitFromAces)
+      newHand.addCard(self._cards.pop())
+      return newHand
 

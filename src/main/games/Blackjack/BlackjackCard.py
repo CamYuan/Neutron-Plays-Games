@@ -33,7 +33,7 @@ class BlackjackCard:
     if(self.value() >= 10):
       return 10
     else:
-      return self.rank
+      return self.value()
 
 
 #TODO: add card counting values from https://www.blackjackapprenticeship.com/card-counting-systems/

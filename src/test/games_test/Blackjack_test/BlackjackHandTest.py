@@ -1,16 +1,14 @@
 import unittest
 from games.Blackjack import BlackjackHand, BlackjackCard
 from unittest.mock import MagicMock
+from games.Blackjack.enums import Rank, Suits
 
 
 class BlackjackHandTest(unittest.TestCase):
   
   def setUp(self):
-    test: BlackjackCard = MagicMock(spec=BlackjackCard)
-    self.mockBlackjackCard = MagicMock(spec=BlackjackCard)
-    self.mockBlackjackCard.getSoftValue.return_value = 11
-    self.mockBlackjackCard.getHardValue.return_value = 1
-    self.mockBlackjackCard.value.return_value = 1
+    self.ace = BlackjackCard(Rank.ACE, Suits.HEARTS)
+    self.jack = BlackjackCard(Rank.JACK, Suits.SPADES)
   
   def test_init(self):
     hand = BlackjackHand(10)
@@ -23,49 +21,54 @@ class BlackjackHandTest(unittest.TestCase):
     hand = BlackjackHand(10, True)
     self.assertTrue(hand._splitFromAces)
   
+  def test_repr(self):
+    hand = BlackjackHand(10)
+    hand.addCard(self.ace)
+    self.assertEqual(str(hand), str(self.ace))
+  
   def test_addCard(self):
     hand = BlackjackHand(10)
     hand.updateSoftScore = MagicMock()
     hand.updateHardScore = MagicMock()
-    hand.addCard(self.mockBlackjackCard)
-    self.assertIn(self.mockBlackjackCard, hand._cards)
-    hand.updateSoftScore.assert_called_once_with(self.mockBlackjackCard)
-    hand.updateHardScore.assert_called_once_with(self.mockBlackjackCard)    
+    hand.addCard(self.ace)
+    self.assertIn(self.ace, hand._cards)
+    hand.updateSoftScore.assert_called_once_with(self.ace)
+    hand.updateHardScore.assert_called_once_with(self.ace)    
     
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
     self.assertTrue(len(hand._cards) == 2)
 
   def test_updateSoftScore(self):
     hand = BlackjackHand(10)
-    hand.updateSoftScore(self.mockBlackjackCard)
+    hand.updateSoftScore(self.ace)
     self.assertEqual(hand.softScore, 11)
-    hand.updateSoftScore(self.mockBlackjackCard)
+    hand.updateSoftScore(self.ace)
     self.assertEqual(hand.softScore, 12)
 
   def test_updateHardScore(self):
     hand = BlackjackHand(10)
-    hand.updateHardScore(self.mockBlackjackCard)
+    hand.updateHardScore(self.ace)
     self.assertEqual(hand.hardscore, 1)
     
-    hand.updateHardScore(self.mockBlackjackCard)
+    hand.updateHardScore(self.ace)
     self.assertEqual(hand.hardscore, 2)
     
   def test_canDoubleDown(self):
     hand = BlackjackHand(10)
     self.assertFalse(hand.canDoubleDown())
     
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
     self.assertFalse(hand.canDoubleDown())
     
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
     self.assertTrue(hand.canDoubleDown())
     
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
     self.assertFalse(hand.canDoubleDown())
     
     hand = BlackjackHand(10, True)
-    hand.addCard(self.mockBlackjackCard)
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
+    hand.addCard(self.ace)
     self.assertFalse(hand.canDoubleDown())
     
   def test_canSplit(self):
@@ -73,25 +76,25 @@ class BlackjackHandTest(unittest.TestCase):
     self.assertFalse(hand.canSplit())
     
     #One Card
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
     self.assertFalse(hand.canSplit())
     
     #Two Cards
-    self.mockBlackjackCard.__eq__.return_value = True
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
     self.assertTrue(hand.canSplit())
     
-    self.mockBlackjackCard.__eq__.return_value = False
+    hand._cards.pop()
+    hand.addCard(self.jack)
     self.assertFalse(hand.canSplit())
     
     #More than two Cards
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
     self.assertFalse(hand.canSplit())
     
     #Split from aces and two cards
     hand = BlackjackHand(10, True)
-    hand.addCard(self.mockBlackjackCard)
-    hand.addCard(self.mockBlackjackCard)
+    hand.addCard(self.ace)
+    hand.addCard(self.ace)
     self.assertFalse(hand.canSplit())
   def test_isBust(self):
     hand = BlackjackHand(10)
@@ -106,20 +109,19 @@ class BlackjackHandTest(unittest.TestCase):
     self.assertEqual(hand.bet, 20)
     
   def test_splitHand(self):
-    secondCard = MagicMock(spec=BlackjackCard)
-    secondCard.getSoftValue.return_value = 11
-    secondCard.getHardValue.return_value = 1
     hand = BlackjackHand(10)
-    hand.addCard(self.mockBlackjackCard)
-    hand.addCard(secondCard)
-    card = hand.splitHand()
-    self.assertEqual(card, secondCard)
+    hand.addCard(self.ace)
+    hand.addCard(self.ace)
+    newHand = hand.splitHand()
     self.assertEqual(len(hand._cards), 1)
+    self.assertEqual(newHand._cards[0], self.ace)
     self.assertTrue(hand._splitFromAces)
+    self.assertTrue(newHand._splitFromAces)
+    self.assertEqual(newHand.bet, hand.bet)
     
     hand = BlackjackHand(10)
-    hand.addCard(secondCard)
-    hand.addCard(secondCard)
+    hand.addCard(self.jack)
+    hand.addCard(self.jack)
     hand.splitHand()
     self.assertFalse(hand._splitFromAces)
     
