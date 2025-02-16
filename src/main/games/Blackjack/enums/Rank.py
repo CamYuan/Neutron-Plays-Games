@@ -1,5 +1,5 @@
 from enum import Enum
-
+# (value, symbol)
 class Rank(Enum):
   ACE = (1, "A")
   TWO = (2, "2")
