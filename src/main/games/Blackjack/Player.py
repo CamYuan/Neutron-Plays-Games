@@ -1,17 +1,24 @@
-from games.Blackjack.BlackjackHand import BlackjackHand
-from games.Blackjack.enums import Actions
+from games.Blackjack.enums import Actions, Result
+
+'''
+Maybe this should be an agent instead? Especially now that the hands and splithand count are being moved to Round clss
+'''
 class Player:
   def __init__(self, name, bankroll=0):
     self.name = name 
     self.bankroll = bankroll
-    self.hands: list[BlackjackHand] = [] 
-    self.splitHandCount = 0
     self.wins = 0
     self.losses = 0
     self.pushes = 0
 
   def __repr__(self):
     return "{}: {}-{}-{} Remaining bankroll: {}".format(self.name, self.wins, self.losses, self.pushes, self.bankroll)
+  
+  def __hash__(self):
+    return hash(self.name)
+  
+  def __eq__(self, other):
+    return isinstance(other, Player) and self.name == other.name
   
   def printStats(self):
     totalHands = self.wins + self.losses + self.pushes
@@ -26,32 +33,27 @@ class Player:
       output += "{Wins:.2%}-{Losses:.2%}\n".format(Wins=self.wins/winLossHands,Losses=self.losses/winLossHands)
     print(output)
     
-  def printHands(self):
-    for hand in self.hands:
-      print(hand)
-
-  def addHand(self, hand: BlackjackHand):
-    self.hands.append(hand)
-
   def hasEnoughFunds(self, amount):
-    return amount <= self.bankroll
+    return amount <= self.bankroll    
+    
+  def askForBet(self):
+    validBet = False
+    betAmount = 0
+    while(not validBet):
+      try:
+        betAmount = int(input("Your Funds: " + str(self.bankroll) + "\nHow much do you want to bet? "))
+        validBet = self.hasEnoughFunds(betAmount) 
+      except:
+        print("Invalid Bet. Please enter a number")
+        validBet = False
+    self.bankroll -= betAmount
+    return betAmount
 
-  def clearHands(self):
-    self.splitHandCount = 0
-    self.hands.clear()
-
-  def recievePayout(self, hand: BlackjackHand, multiplier):
-    self.bankroll += hand.bet #Give the player the initial bet back first
-    self.bankroll += hand.bet*multiplier
-
-  def getPlayerAction(self, hand: BlackjackHand):
-    if(hand._splitFromAces or hand.softScore == 21):
-      return Actions.S
-    options, splitOptionAvailable, doubleDownOptionAvailable = self.getActionOptions()
+  def askForDecision(self, optionsText, splitOptionAvailable, doubleDownOptionAvailable):
     choice = ''
-    while not self.validUserChoice(choice, splitOptionAvailable, doubleDownOptionAvailable):
-      # Maybe we toggle user input or bot input here witha  flag or something
-      choice = input(options).upper()
+    while not self.isValidUserAction(choice, splitOptionAvailable, doubleDownOptionAvailable):
+      # Maybe we toggle user input or NN input here with a flag or something
+      choice = input(optionsText).upper()
       # choice = getModelPrediction(dealer, hand)
     if choice == 'H':
       return Actions.H
@@ -60,24 +62,22 @@ class Player:
     elif choice == 'D': 
       return Actions.D
     elif choice == 'T':
-      self.splitHandCount += 1
       return Actions.T
     else:
       print("Invalid Input which shouldn't be possible")
-
-  def getActionOptions(self, hand: BlackjackHand):
-    options = "[H]it or [S]tand"
-    splitOptionAvailable = False
-    doubleDownOptionAvailable = False
-    if(self.hasEnoughFunds(hand.bet)):
-      if hand.canSplit() and self.splitHandCount < 3:
-        options +=  " or Spli[T]"
-        splitOptionAvailable = True
-      if hand.canDoubleDown():
-        options +=  " or [D]oubledown"
-        doubleDownOptionAvailable = True
-    options += ": "
-    return options, splitOptionAvailable, doubleDownOptionAvailable
   
-  def validUserChoice(self, choice, splitOptionAvailable, doubleDownOptionAvailable):
+  def isValidUserAction(self, choice, splitOptionAvailable, doubleDownOptionAvailable):
     return choice == 'H' or choice == 'S' or (splitOptionAvailable and choice == 'T') or (doubleDownOptionAvailable and choice != 'D')
+  
+  def recievePayout(self, amount):
+    self.bankroll += amount
+  
+  def finalizeHand(self, result: Result):
+    if(result == Result.WIN):
+      self.wins += 1
+    elif(result == Result.BLACKJACK):
+      self.wins += 1
+    elif(result == Result.LOSS):
+      self.losses += 1
+    elif(result == Result.PUSH):
+      self.pushes += 1
