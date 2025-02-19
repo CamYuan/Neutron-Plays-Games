@@ -16,6 +16,7 @@ class BlackjackHand:
     self.hardscore: int = 0
     self._cards: List[BlackjackCard] = []
     self._splitFromAces: bool = splitAces
+    self._doubledDown: bool = False
 
   def __repr__(self):
     return ' '.join([str(card) for card in self._cards])
@@ -72,6 +73,8 @@ class BlackjackHand:
 
   def doubleDown(self):
     self.bet *= 2
+    self.player.bankroll -= self.bet
+    self._doubledDown = True
 
   def splitHand(self) -> 'BlackjackHand':
     if self._cards[0].value() == 1:
@@ -81,7 +84,7 @@ class BlackjackHand:
     return newHand
   
   def getPlayerAction(self, playerSplitCount):
-    if(self._splitFromAces or self.softScore == 21):
+    if(self._splitFromAces or self._doubledDown or self.softScore == 21 or self.isBust()):
       return Actions.S
     optionsText, splitOptionAvailable, doubleDownOptionAvailable = self.getActionOptions(playerSplitCount)
     choice = self.player.askForDecision(optionsText, splitOptionAvailable, doubleDownOptionAvailable )

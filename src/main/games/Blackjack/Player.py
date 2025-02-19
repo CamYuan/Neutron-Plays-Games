@@ -50,7 +50,7 @@ class Player:
     return betAmount
 
   def askForDecision(self, optionsText, splitOptionAvailable, doubleDownOptionAvailable):
-    choice = ''
+    choice = input(optionsText).upper()
     while not self.isValidUserAction(choice, splitOptionAvailable, doubleDownOptionAvailable):
       # Maybe we toggle user input or NN input here with a flag or something
       choice = input(optionsText).upper()
