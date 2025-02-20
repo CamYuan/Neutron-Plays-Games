@@ -1,19 +1,22 @@
+import math
+import random
 from typing import List
 from games.Blackjack import BlackjackCard, BlackjackHand, Player
-from HelperFunctions import *
-from games.Blackjack.old_GameState import *
-import numpy as np
-import pickle
-import sys, os, io
+from games.Blackjack.enums import Actions, Rank, Result, Suits
 
-from games.Blackjack.enums import Actions, Result
 
+'''
+TODO:
+#Card Counting
+RunningCount = 0
+SuitCounts = [0,0,0,0]
+'''
 class BlackjackTable:
   def __init__(self, num_decks=6):
     self.minBet = 10
     self.maxBet = 1000
     self.numDecks = num_decks
-    self.dealer = Player("dealer", 10000000000)
+    self.dealer = Player("Dealer", 10000000000)
     
     self.shoe = self.loadShoe(num_decks)
     self.isShuffleTime = False
@@ -44,6 +47,7 @@ class BlackjackTable:
     #Hands will get cleared when there is a blackjack or bust. 
     #If it's a dead hand, dealer doesn't take cards for no reason
     if(len(hands) > 0): 
+      self.dealerHand.dealer = False
       self.playDealerHand()
       self.calculateScoresAndPayout(hands)
     self.reset()
@@ -57,14 +61,15 @@ class BlackjackTable:
       bet = player.askForBet()
       hands.append(BlackjackHand(player, bet))
       self.playerSplitCounts[player] = 0
+    hands.append(BlackjackHand(self.dealer, None, dealer=True)) #dealer hand goes last
     return hands
       
   def deal(self, hands: List[BlackjackHand]):
-    hands.append(BlackjackHand(self.dealer, None)) #dealer hand goes last
     for _ in range(2):
         for hand in hands:
             self.hit(hand)
     self.dealerHand = hands.pop()
+    
   
   def hit(self, hand: BlackjackHand):
     card = self.shoe.pop()
@@ -108,6 +113,7 @@ class BlackjackTable:
       print(hand)
       choice = hand.getPlayerAction(self.playerSplitCounts[hand.player]) 
       while(choice != Actions.S):
+        print(choice)
         if(choice == Actions.H):
           self.hit(hand)
         elif(choice == Actions.T): 
@@ -120,6 +126,8 @@ class BlackjackTable:
         else: #Actions.S
           #Choice will automatically be stand if Aces were split or hand is bust
           'No op' #intentionally empty
+        print(self.dealerHand)
+        print(hand)
         choice = hand.getPlayerAction(self.playerSplitCounts[hand.player]) 
         
         
@@ -135,6 +143,7 @@ class BlackjackTable:
       self.hit(self.dealerHand)
       
   def calculateScoresAndPayout(self, hands: List[BlackjackHand]):
+    
     if(self.dealerHand.isBust()):
       for hand in hands:
         hand.processWin()
@@ -146,13 +155,19 @@ class BlackjackTable:
           hand.processPush()
         else: #hand.getHandScore() < self.dealerHand.getHandScore()
           hand.processLose()
+          
+  def printHands(self, hands: List[BlackjackHand]):
+    print(self.dealerHand)
+    for hand in hands:
+      print(hand)
       
       
 if(__name__ == "__main__"):
   table = BlackjackTable()
-  player1 = Player("p1", 100000)
-  player2 = Player("2", 100000)
-  table.playRound([player1, player2])
+  player1 = Player("player 1", 100000)
+  player2 = Player("player 2", 100000)
+  for i in range(10):
+    table.playRound([player1, player2])
   print(player1.printStats())
   print(player2.printStats())
 

@@ -67,7 +67,9 @@ class Player:
       print("Invalid Input which shouldn't be possible")
   
   def isValidUserAction(self, choice, splitOptionAvailable, doubleDownOptionAvailable):
-    return choice == 'H' or choice == 'S' or (splitOptionAvailable and choice == 'T') or (doubleDownOptionAvailable and choice != 'D')
+    valid =  choice == 'H' or choice == 'S' or (splitOptionAvailable and choice == 'T') or (doubleDownOptionAvailable and choice == 'D')
+    if not valid: print('Invalid Input. Try again')
+    return valid
   
   def recievePayout(self, amount):
     self.bankroll += amount
