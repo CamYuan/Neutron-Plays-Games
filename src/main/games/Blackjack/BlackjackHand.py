@@ -9,7 +9,7 @@ A hand is each individual collection of cards. A player may split a hand which w
 '''
 class BlackjackHand:
 
-  def __init__(self, player, bet, splitAces=False, dealer=False):
+  def __init__(self, player, bet=0, splitAces=False, dealer=False):
     self.bet: int = bet
     self.player: Player = player
     self.dealer = dealer
@@ -31,7 +31,7 @@ class BlackjackHand:
     self.__updateSoftScore(card)
     self.__updateHardScore(card)
       
-  #TODO: This isn't going to work is A is first. Like A 9 9, Ace is treated like an 11 + 9 + 9 would be a "bust"
+  #Softscore can 'bust' in which case the class will default to the hard score
   def __updateSoftScore(self, card: BlackjackCard):
     if(self.__softScore + card.getSoftValue() <= 21):
       self.__softScore += card.getSoftValue()
@@ -81,9 +81,10 @@ class BlackjackHand:
   def splitHand(self) -> 'BlackjackHand':
     if self._cards[0].value() == 1:
         self.__splitFromAces = True
-    newHand = BlackjackHand(self.bet, self.__splitFromAces)
+    newHand = BlackjackHand(player=self.player, bet=self.bet, splitAces=self.__splitFromAces)
     newHand.addCard(self._cards.pop())
     return newHand
+  
   def isBust(self):
     return self.__hardScore > 21
   

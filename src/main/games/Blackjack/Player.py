@@ -5,11 +5,11 @@ Maybe this should be an agent instead? Especially now that the hands and splitha
 '''
 class Player:
   def __init__(self, name, bankroll=0):
-    self.name = name 
-    self.bankroll = bankroll
-    self.wins = 0
-    self.losses = 0
-    self.pushes = 0
+    self.name: str = name 
+    self.bankroll: int = bankroll
+    self.wins: int = 0
+    self.losses: int = 0
+    self.pushes: int = 0
 
   def __repr__(self):
     return "{}: {}-{}-{} Remaining bankroll: {}".format(self.name, self.wins, self.losses, self.pushes, self.bankroll)

@@ -18,25 +18,25 @@ class BlackjackCardTest(unittest.TestCase):
   def test_value(self) -> None:
     for rank in Rank:
       card = BlackjackCard(rank, None)
-      self.assertEqual(card.value(), rank.value[0])
+      self.assertEqual(card.value(), rank.value)
   
   def test_getHardValue(self) -> None:
     for rank in Rank:
       card = BlackjackCard(rank, None)
-      if(rank.value[0] >= 10):
+      if(rank.value >= 10):
         self.assertEqual(card.getHardValue(), 10)
       else:
-        self.assertEqual(card.getHardValue(), rank.value[0])
+        self.assertEqual(card.getHardValue(), rank.value)
   
   def test_getSoftValue(self) -> None:
     for rank in Rank:
       card = BlackjackCard(rank, None)
       if(rank == Rank.ACE):
         self.assertEqual(card.getSoftValue(), 11)
-      elif(rank.value[0] >= 10):  
+      elif(rank.value >= 10):  
         self.assertEqual(card.getSoftValue(), 10)
       else:
-        self.assertEqual(card.getHardValue(), rank.value[0])
+        self.assertEqual(card.getHardValue(), rank.value)
 
 
   def test_str(self):

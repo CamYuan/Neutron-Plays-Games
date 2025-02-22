@@ -106,6 +106,7 @@ class BlackjackTable:
     
   def playHands(self, hands: List[BlackjackHand]):
     for index, hand in enumerate(hands):
+      print('\n'+hand.player.name + '\'s turn')  
       #After a split, the second hand won't get a card until the first hand is done
       if len(hand._cards) < 2: 
         self.hit(hand)
@@ -166,7 +167,7 @@ if(__name__ == "__main__"):
   table = BlackjackTable()
   player1 = Player("player 1", 100000)
   player2 = Player("player 2", 100000)
-  for i in range(10):
+  for i in range(1):
     table.playRound([player1, player2])
   print(player1.printStats())
   print(player2.printStats())
