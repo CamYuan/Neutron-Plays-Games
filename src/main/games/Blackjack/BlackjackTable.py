@@ -140,7 +140,7 @@ class BlackjackTable:
         hands.remove(hand)
         
   def playDealerHand(self):
-    while(self.dealerHand.getHandScore() < 17):
+    while(self.dealerHand.getSoftScore() < 17):
       self.hit(self.dealerHand)
       
   def calculateScoresAndPayout(self, hands: List[BlackjackHand]):
@@ -150,11 +150,11 @@ class BlackjackTable:
         hand.processWin()
     else:
       for hand in hands:
-        if(hand.getHandScore() > self.dealerHand.getHandScore()):
+        if(hand.getSoftScore() > self.dealerHand.getSoftScore()):
           hand.processWin()
-        elif(hand.getHandScore() == self.dealerHand.getHandScore()):
+        elif(hand.getSoftScore() == self.dealerHand.getSoftScore()):
           hand.processPush()
-        else: #hand.getHandScore() < self.dealerHand.getHandScore()
+        else: #hand.getSoftScore() < self.dealerHand.getSoftScore()
           hand.processLose()
           
   def printHands(self, hands: List[BlackjackHand]):

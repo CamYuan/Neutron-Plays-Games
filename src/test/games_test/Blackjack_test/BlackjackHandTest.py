@@ -56,11 +56,28 @@ class BlackjackHandTest(unittest.TestCase):
     hand._BlackjackHand__updateHardScore(self.ace)
     self.assertEqual(hand._BlackjackHand__hardScore, 2)
     
-  def test_getHandScore(self):
-    pass
-  
+  def test_getSoftScore(self):
+    hand = BlackjackHand(self.player, bet=10)
+    hand._BlackjackHand__softScore = 21
+    hand._BlackjackHand__hardScore = 10
+    self.assertEqual(hand.getSoftScore(), 21)
+    
+    #soft bust returns hard score
+    hand._BlackjackHand__softScore = 22
+    self.assertEqual(hand.getSoftScore(), 10)
+    
+  def test_getHardScore(self):
+    hand = BlackjackHand(self.player, bet=10)
+    hand._BlackjackHand__hardScore = 10
+    self.assertEqual(hand.getHardScore(), 10)
+    
+    
   def test_hasBlackjack(self):
-    pass
+    hand = BlackjackHand(self.player, bet=10)
+    hand._BlackjackHand__softScore = 21
+    self.assertTrue(hand.hasBlackjack())
+    hand._BlackjackHand__softScore = 22
+    self.assertFalse(hand.hasBlackjack())
   
   
   def test_canDoubleDown(self):

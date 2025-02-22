@@ -41,11 +41,15 @@ class BlackjackHand:
   def __updateHardScore(self, card: BlackjackCard):
     self.__hardScore += card.getHardValue()
     
-  def getHandScore(self):
-    if(self.__softScore <= 21 and self.__softScore > self.__hardScore):
+  #Soft score will always be better than hardscore unless it's a soft bust    
+  def getSoftScore(self):
+    if(self.__softScore <= 21):
       return self.__softScore
-    else:
+    else: 
       return self.__hardScore
+    
+  def getHardScore(self):
+    return self.__hardScore
     
   #Should only be called at beginning of a Round. 
   #There are other factors that rule out a Blackjack but I'm keeping it simple and expecting this only to be called once
