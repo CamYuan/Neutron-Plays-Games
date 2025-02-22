@@ -7,8 +7,8 @@ from games.Blackjack.enums import Rank, Suits
 class BlackjackHandTest(unittest.TestCase):
   
   def setUp(self):
-    self.ace = BlackjackCard(Rank.ACE, Suits.HEARTS)
     self.jack = BlackjackCard(Rank.JACK, Suits.SPADES)
+    self.ace = BlackjackCard(Rank.ACE, Suits.HEARTS)
     self.player = Player("Bob")
   
   def test_init(self):

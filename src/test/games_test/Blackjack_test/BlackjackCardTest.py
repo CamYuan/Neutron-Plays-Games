@@ -14,32 +14,8 @@ class BlackjackCardTest(unittest.TestCase):
     card = BlackjackCard(Rank.ACE, Suits.HEARTS)
     self.assertEqual(card.rank, Rank.ACE)
     self.assertEqual(card.suit, Suits.HEARTS)
-
-  def test_value(self) -> None:
-    for rank in Rank:
-      card = BlackjackCard(rank, None)
-      self.assertEqual(card.value(), rank.value)
-  
-  def test_getHardValue(self) -> None:
-    for rank in Rank:
-      card = BlackjackCard(rank, None)
-      if(rank.value >= 10):
-        self.assertEqual(card.getHardValue(), 10)
-      else:
-        self.assertEqual(card.getHardValue(), rank.value)
-  
-  def test_getSoftValue(self) -> None:
-    for rank in Rank:
-      card = BlackjackCard(rank, None)
-      if(rank == Rank.ACE):
-        self.assertEqual(card.getSoftValue(), 11)
-      elif(rank.value >= 10):  
-        self.assertEqual(card.getSoftValue(), 10)
-      else:
-        self.assertEqual(card.getHardValue(), rank.value)
-
-
-  def test_str(self):
+    
+  def test_repr(self):
     card = BlackjackCard(None, Suits.CLUBS)
     self.assertEqual(str(card), "Cut Card \u2612")
     
@@ -76,7 +52,31 @@ class BlackjackCardTest(unittest.TestCase):
     c2 = "something"
     self.assertNotEqual(c1, c2)
     
-    
+  def test_value(self) -> None:
+    for rank in Rank:
+      card = BlackjackCard(rank, None)
+      self.assertEqual(card.value(), rank.value)
+  
+  def test_getSoftValue(self) -> None:
+    for rank in Rank:
+      card = BlackjackCard(rank, None)
+      if(rank == Rank.ACE):
+        self.assertEqual(card.getSoftValue(), 11)
+      elif(rank.value >= 10):  
+        self.assertEqual(card.getSoftValue(), 10)
+      else:
+        self.assertEqual(card.getHardValue(), rank.value)
+  
+  def test_getHardValue(self) -> None:
+    for rank in Rank:
+      card = BlackjackCard(rank, None)
+      if(rank.value >= 10):
+        self.assertEqual(card.getHardValue(), 10)
+      else:
+        self.assertEqual(card.getHardValue(), rank.value)
+
+
+
     
 if __name__ == '__main__':
   unittest.main()
