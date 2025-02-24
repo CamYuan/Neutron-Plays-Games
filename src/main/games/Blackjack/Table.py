@@ -1,7 +1,7 @@
 import math
 import random
 from typing import List
-from games.Blackjack import BlackjackCard, BlackjackHand, Player
+from games.Blackjack import Card, Hand, Player
 from games.Blackjack.enums import Actions, Rank, Result, Suits
 
 
@@ -20,16 +20,16 @@ class BlackjackTable:
     
     self.shoe = self.loadShoe(num_decks)
     self.isShuffleTime = False
-    self.dealerHand: BlackjackHand  = None
+    self.dealerHand: Hand  = None
     self.playerSplitCounts = {}
   
-  def loadShoe(self, numberOfDecks) -> List[BlackjackCard]:
+  def loadShoe(self, numberOfDecks) -> List[Card]:
     shoe = []
-    cutCard = BlackjackCard(None,None)
+    cutCard = Card(None,None)
     for deck in range(0,numberOfDecks):
         for suit in Suits:
             for rank in Rank:
-                shoe.append(BlackjackCard(rank,suit))
+                shoe.append(Card(rank,suit))
     random.shuffle(shoe) #shuffle
     #index between 70-90% of the BACK of the deck to insert the cutCard
     minIndex = math.floor(len(shoe)*.7)
@@ -55,23 +55,23 @@ class BlackjackTable:
 
     
   
-  def initializeRound(self, players: List[Player]) -> List[BlackjackHand]:
+  def initializeRound(self, players: List[Player]) -> List[Hand]:
     hands = []
     for player in players:
       bet = player.askForBet()
-      hands.append(BlackjackHand(player, bet))
+      hands.append(Hand(player, bet))
       self.playerSplitCounts[player] = 0
-    hands.append(BlackjackHand(self.dealer, None, dealer=True)) #dealer hand goes last
+    hands.append(Hand(self.dealer, None, dealer=True)) #dealer hand goes last
     return hands
       
-  def deal(self, hands: List[BlackjackHand]):
+  def deal(self, hands: List[Hand]):
     for _ in range(2):
         for hand in hands:
             self.hit(hand)
     self.dealerHand = hands.pop()
     
   
-  def hit(self, hand: BlackjackHand):
+  def hit(self, hand: Hand):
     card = self.shoe.pop()
     if(card.rank == None):
       # print("----------------------CUT CARD----------------------")
@@ -80,7 +80,7 @@ class BlackjackTable:
     #TODO: card count here I think
     hand.addCard(card)
   
-  def checkBlackjacks(self, hands: List[BlackjackHand]):
+  def checkBlackjacks(self, hands: List[Hand]):
     dealerBlackjack = self.dealerHand.hasBlackjack()
     #Not offering insurance in this game
     #players will only have 1 hand each at this point
@@ -98,13 +98,13 @@ class BlackjackTable:
           hands.remove(hand) 
           
   def reset(self):
-    self.dealerHand: BlackjackHand  = None
+    self.dealerHand: Hand  = None
     self.playerSplitCounts = {}
     if(self.isShuffleTime):
       self.shoe = self.loadShoe(self.numDecks)
     
     
-  def playHands(self, hands: List[BlackjackHand]):
+  def playHands(self, hands: List[Hand]):
     for index, hand in enumerate(hands):
       print('\n'+hand.player.name + '\'s turn')  
       #After a split, the second hand won't get a card until the first hand is done
@@ -133,7 +133,7 @@ class BlackjackTable:
         
         
   #A hand should be removed right when they bust... but python lists and for loops can be funky so just do it here
-  def removeBustHands(self, hands: List[BlackjackHand]):
+  def removeBustHands(self, hands: List[Hand]):
     for hand in hands[:]:
       if(hand.isBust()):
         hand.processLose()
@@ -143,7 +143,7 @@ class BlackjackTable:
     while(self.dealerHand.getSoftScore() < 17):
       self.hit(self.dealerHand)
       
-  def calculateScoresAndPayout(self, hands: List[BlackjackHand]):
+  def calculateScoresAndPayout(self, hands: List[Hand]):
     
     if(self.dealerHand.isBust()):
       for hand in hands:
@@ -157,7 +157,7 @@ class BlackjackTable:
         else: #hand.getSoftScore() < self.dealerHand.getSoftScore()
           hand.processLose()
           
-  def printHands(self, hands: List[BlackjackHand]):
+  def printHands(self, hands: List[Hand]):
     print(self.dealerHand)
     for hand in hands:
       print(hand)

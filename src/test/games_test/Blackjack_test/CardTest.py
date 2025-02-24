@@ -1,52 +1,52 @@
 import unittest
-from games.Blackjack import BlackjackCard
+from games.Blackjack import Card
 from games.Blackjack.enums import Suits, Rank
 
 
-class BlackjackCardTest(unittest.TestCase):
+class CardTest(unittest.TestCase):
   
   def setUp(self):
     self.cards = []
     for rank in Rank:
-      self.cards.append(BlackjackCard(rank, None))
+      self.cards.append(Card(rank, None))
 
   def test_init(self):
-    card = BlackjackCard(Rank.ACE, Suits.HEARTS)
+    card = Card(Rank.ACE, Suits.HEARTS)
     self.assertEqual(card.rank, Rank.ACE)
     self.assertEqual(card.suit, Suits.HEARTS)
     
   def test_repr(self):
-    card = BlackjackCard(None, Suits.CLUBS)
+    card = Card(None, Suits.CLUBS)
     self.assertEqual(str(card), "Cut Card \u2612")
     
-    card = BlackjackCard(Rank.ACE, Suits.HEARTS)
+    card = Card(Rank.ACE, Suits.HEARTS)
     self.assertEqual(str(card), "A\u2665")
 
-    card = BlackjackCard(Rank.TEN, Suits.DIAMONDS)
+    card = Card(Rank.TEN, Suits.DIAMONDS)
     self.assertEqual(str(card), "10\u2666")
 
-    card = BlackjackCard(Rank.JACK, Suits.CLUBS)
+    card = Card(Rank.JACK, Suits.CLUBS)
     self.assertEqual(str(card), "J\u2663")
 
-    card = BlackjackCard(Rank.QUEEN, Suits.SPADES)
+    card = Card(Rank.QUEEN, Suits.SPADES)
     self.assertEqual(str(card), "Q\u2660")
 
-    card = BlackjackCard(Rank.KING, Suits.SPADES)
+    card = Card(Rank.KING, Suits.SPADES)
     self.assertEqual(str(card), "K\u2660")
 
   def test_eq(self):
-    c1 = BlackjackCard(Rank.ACE, Suits.HEARTS)
-    c2 = BlackjackCard(Rank.ACE, Suits.HEARTS)
+    c1 = Card(Rank.ACE, Suits.HEARTS)
+    c2 = Card(Rank.ACE, Suits.HEARTS)
     self.assertEqual(c1, c2)
     
-    c2 = BlackjackCard(Rank.ACE, Suits.CLUBS)
+    c2 = Card(Rank.ACE, Suits.CLUBS)
     self.assertEqual(c1, c2)
     
-    c1 = BlackjackCard(Rank.TEN, Suits.CLUBS)
-    c2 = BlackjackCard(Rank.JACK, Suits.CLUBS)
+    c1 = Card(Rank.TEN, Suits.CLUBS)
+    c2 = Card(Rank.JACK, Suits.CLUBS)
     self.assertEqual(c1, c2)
 
-    c2 = BlackjackCard(Rank.EIGHT, Suits.HEARTS)
+    c2 = Card(Rank.EIGHT, Suits.HEARTS)
     self.assertNotEqual(c1, c2)
     
     c2 = "something"
@@ -54,12 +54,12 @@ class BlackjackCardTest(unittest.TestCase):
     
   def test_value(self) -> None:
     for rank in Rank:
-      card = BlackjackCard(rank, None)
+      card = Card(rank, None)
       self.assertEqual(card.value(), rank.value)
   
   def test_getSoftValue(self) -> None:
     for rank in Rank:
-      card = BlackjackCard(rank, None)
+      card = Card(rank, None)
       if(rank == Rank.ACE):
         self.assertEqual(card.getSoftValue(), 11)
       elif(rank.value >= 10):  
@@ -69,7 +69,7 @@ class BlackjackCardTest(unittest.TestCase):
   
   def test_getHardValue(self) -> None:
     for rank in Rank:
-      card = BlackjackCard(rank, None)
+      card = Card(rank, None)
       if(rank.value >= 10):
         self.assertEqual(card.getHardValue(), 10)
       else:

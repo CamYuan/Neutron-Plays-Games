@@ -1,19 +1,19 @@
 from typing import List
 
-from games.Blackjack import BlackjackCard, Player
+from games.Blackjack import Card, Player
 from games.Blackjack.enums import Actions, Result
 from .BlackjackCard import BlackjackCard
 
 '''
 A hand is each individual collection of cards. A player may split a hand which will create a seperate instance of a hand
 '''
-class BlackjackHand:
+class Hand:
 
   def __init__(self, player, bet=0, splitAces=False, dealer=False):
     self.bet: int = bet
     self.player: Player = player
     self.dealer = dealer
-    self._cards: List[BlackjackCard] = []
+    self._cards: List[Card] = []
     
     self.__softScore: int = 0 
     self.__hardScore: int = 0
@@ -26,19 +26,19 @@ class BlackjackHand:
     else:
       return self.player.name + ': ' +' '.join([str(card) for card in self._cards])
 
-  def addCard(self, card: BlackjackCard):
+  def addCard(self, card: Card):
     self._cards.append(card)
     self.__updateSoftScore(card)
     self.__updateHardScore(card)
       
   #Softscore can 'bust' in which case the class will default to the hard score
-  def __updateSoftScore(self, card: BlackjackCard):
+  def __updateSoftScore(self, card: Card):
     if(self.__softScore + card.getSoftValue() <= 21):
       self.__softScore += card.getSoftValue()
     else:
       self.__softScore += card.getHardValue()
   
-  def __updateHardScore(self, card: BlackjackCard):
+  def __updateHardScore(self, card: Card):
     self.__hardScore += card.getHardValue()
     
   #Soft score will always be better than hardscore unless it's a soft bust    
@@ -82,10 +82,10 @@ class BlackjackHand:
     else:
       return False
     
-  def splitHand(self) -> 'BlackjackHand':
+  def splitHand(self) -> 'Hand':
     if self._cards[0].value() == 1:
         self.__splitFromAces = True
-    newHand = BlackjackHand(player=self.player, bet=self.bet, splitAces=self.__splitFromAces)
+    newHand = Hand(player=self.player, bet=self.bet, splitAces=self.__splitFromAces)
     newHand.addCard(self._cards.pop())
     return newHand
   
