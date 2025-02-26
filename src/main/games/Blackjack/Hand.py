@@ -2,8 +2,10 @@ from typing import List
 
 from games.Blackjack import Card, Player
 from games.Blackjack.enums import Actions, Result
-from .BlackjackCard import BlackjackCard
+from .Card import Card
 
+import logging
+logger = logging.getLogger(__name__)
 '''
 A hand is each individual collection of cards. A player may split a hand which will create a seperate instance of a hand
 '''
@@ -22,14 +24,19 @@ class Hand:
 
   def __repr__(self):
     if(self.dealer):
-      return self.player.name + ': '+ str(self._cards[1])
+      hand = str(self._cards[1])
+      softscore = self._cards[1].getSoftValue()
+      hardscore = self._cards[1].getSoftValue()
     else:
-      return self.player.name + ': ' +' '.join([str(card) for card in self._cards])
+      hand =' '.join([str(card) for card in self._cards])
+      softscore = self.getSoftScore()
+      hardscore = self.getHardScore()
+    return "{name:<10}: {soft:^2} - {hard:^2} - {hand:<20}".format(name=self.player.name, soft=softscore, hard=hardscore, hand=hand)
 
   def addCard(self, card: Card):
     self._cards.append(card)
-    self.__updateSoftScore(card)
     self.__updateHardScore(card)
+    self.__updateSoftScore(card)
       
   #Softscore can 'bust' in which case the class will default to the hard score
   def __updateSoftScore(self, card: Card):
@@ -57,7 +64,7 @@ class Hand:
     return self.__softScore == 21
 
   def canDoubleDown(self):
-    if(len(self._cards) != 2 or self.__splitFromAces):
+    if(len(self._cards) != 2 or self.__splitFromAces or self.__doubledDown):
       return False
     else:
       return True
@@ -86,51 +93,47 @@ class Hand:
     if self._cards[0].value() == 1:
         self.__splitFromAces = True
     newHand = Hand(player=self.player, bet=self.bet, splitAces=self.__splitFromAces)
-    newHand.addCard(self._cards.pop())
+    card = self._cards.pop()
+    newHand.addCard(card)
+    self.__softScore -= card.getSoftValue()
+    self.__hardScore -= card.getHardValue()
     return newHand
   
   def isBust(self):
     return self.__hardScore > 21
-  
-  def getPlayerAction(self, playerSplitCount):
-    if(self.__splitFromAces or self.__doubledDown or self.__softScore == 21 or self.isBust()):
-      return Actions.S
-    optionsText, splitOptionAvailable, doubleDownOptionAvailable = self.getActionOptions(playerSplitCount)
-    choice: str = self.player.askForDecision(optionsText, splitOptionAvailable, doubleDownOptionAvailable )
-    return choice
 
-  def getActionOptions(self, playerSplitCount):
-    optionsText = "[H]it or [S]tand"
-    splitOptionAvailable = False
-    doubleDownOptionAvailable = False
+  def getActionOptions(self, playerSplitCount) -> list[Actions]:
+    if(self.__splitFromAces or self.__doubledDown or self.__softScore == 21 or self.isBust()):
+      return [Actions.S]
+    actionOptions = [Actions.S, Actions.H]
     if(self.player.hasEnoughFunds(self.bet)):
       if self.canSplit() and playerSplitCount < 3:
-        optionsText +=  " or Spli[T]"
-        splitOptionAvailable = True
+        actionOptions.append(Actions.T)
       if self.canDoubleDown():
-        optionsText +=  " or [D]oubledown"
-        doubleDownOptionAvailable = True
-    optionsText += ": "
-    return optionsText, splitOptionAvailable, doubleDownOptionAvailable
+        actionOptions.append(Actions.D)
+    return actionOptions
   
   def processBlackjack(self):
     self.player.recievePayout(self.bet * 2.5)
     self.player.finalizeHand(Result.BLACKJACK)
-    print(str(self), "Blackjack!")
+    logger.info("%s Blackjack!", str(self))
 
   def processWin(self):
     self.player.recievePayout(self.bet * 2)
     self.player.finalizeHand(Result.WIN)
-    print(str(self), "Win!")
+    logger.info( "%s Win!", str(self))
   
-  def processLose(self):
-    self.player.finalizeHand(Result.LOSS)
-    print(str(self), "Loss!")
+  def processLose(self, bust=False):
+    if(bust):
+      self.player.finalizeHand(Result.BUST)
+    else:
+      self.player.finalizeHand(Result.LOSS)
+    logger.info("%s Loss!", str(self))
   
   def processPush(self):
     self.player.recievePayout(self.bet)
     self.player.finalizeHand(Result.PUSH)
-    print(str(self), "Push!")
+    logger.info("%s Push!", str(self))
 
   
   

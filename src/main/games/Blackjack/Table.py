@@ -4,6 +4,8 @@ from typing import List
 from games.Blackjack import Card, Hand, Player
 from games.Blackjack.enums import Actions, Rank, Result, Suits
 
+import logging
+logger = logging.getLogger(__name__)
 
 '''
 TODO:
@@ -11,7 +13,7 @@ TODO:
 RunningCount = 0
 SuitCounts = [0,0,0,0]
 '''
-class BlackjackTable:
+class Table:
   def __init__(self, num_decks=6):
     self.minBet = 10
     self.maxBet = 1000
@@ -22,6 +24,7 @@ class BlackjackTable:
     self.isShuffleTime = False
     self.dealerHand: Hand  = None
     self.playerSplitCounts = {}
+    self.roundCounter = 0
   
   def loadShoe(self, numberOfDecks) -> List[Card]:
     shoe = []
@@ -39,6 +42,8 @@ class BlackjackTable:
 
 
   def playRound(self, players):
+    self.roundCounter += 1
+    logger.info('\nRound ' + str(self.roundCounter))
     hands = self.initializeRound(players) #1
     self.deal(hands) #2
     self.checkBlackjacks(hands)
@@ -47,20 +52,17 @@ class BlackjackTable:
     #Hands will get cleared when there is a blackjack or bust. 
     #If it's a dead hand, dealer doesn't take cards for no reason
     if(len(hands) > 0): 
-      self.dealerHand.dealer = False
+      self.dealerHand.dealer = False #expose the dealer hand
       self.playDealerHand()
       self.calculateScoresAndPayout(hands)
-    self.reset()
-
-
-    
+    self.reset()    
   
   def initializeRound(self, players: List[Player]) -> List[Hand]:
     hands = []
     for player in players:
       bet = player.askForBet()
       hands.append(Hand(player, bet))
-      self.playerSplitCounts[player] = 0
+      self.playerSplitCounts[hash(player)] = 0
     hands.append(Hand(self.dealer, None, dealer=True)) #dealer hand goes last
     return hands
       
@@ -69,12 +71,11 @@ class BlackjackTable:
         for hand in hands:
             self.hit(hand)
     self.dealerHand = hands.pop()
-    
   
   def hit(self, hand: Hand):
     card = self.shoe.pop()
     if(card.rank == None):
-      # print("----------------------CUT CARD----------------------")
+      logger.info("----------------------CUT CARD----------------------")
       self.isShuffleTime = True
       card = self.shoe.pop() #get the next card instead
     #TODO: card count here I think
@@ -85,6 +86,9 @@ class BlackjackTable:
     #Not offering insurance in this game
     #players will only have 1 hand each at this point
     if(dealerBlackjack):
+      logger.info('Dealer Blackjack!')
+      self.dealerHand.dealer = False
+      logger.info(self.dealerHand)
       for hand in hands:
         if(hand.hasBlackjack()):
           hand.processPush()
@@ -106,19 +110,24 @@ class BlackjackTable:
     
   def playHands(self, hands: List[Hand]):
     for index, hand in enumerate(hands):
-      print('\n'+hand.player.name + '\'s turn')  
+      logger.info('\n'+hand.player.name + '\'s turn')  
       #After a split, the second hand won't get a card until the first hand is done
-      if len(hand._cards) < 2: 
-        self.hit(hand)
-      print(self.dealerHand)
-      print(hand)
-      choice = hand.getPlayerAction(self.playerSplitCounts[hand.player]) 
+      logger.info(self.dealerHand)
+      logger.info(hand)
+      choice = ''
       while(choice != Actions.S):
-        print(choice)
+        if len(hand._cards) < 2: 
+          self.hit(hand)
+        actionOptions = hand.getActionOptions(self.playerSplitCounts[hash(hand.player)]) 
+        if(len(actionOptions) == 1):
+          choice = actionOptions[0] #forced stand
+        else:
+          choice = hand.player.getAction(actionOptions)
+        logger.info(choice)
         if(choice == Actions.H):
           self.hit(hand)
         elif(choice == Actions.T): 
-          self.playerSplitCounts[hand.player] += 1
+          self.playerSplitCounts[hash(hand.player)] += 1
           newHand = hand.splitHand()
           hands.insert(index+1, newHand)
         elif(choice == Actions.D):
@@ -127,25 +136,29 @@ class BlackjackTable:
         else: #Actions.S
           #Choice will automatically be stand if Aces were split or hand is bust
           'No op' #intentionally empty
-        print(self.dealerHand)
-        print(hand)
-        choice = hand.getPlayerAction(self.playerSplitCounts[hand.player]) 
+        logger.info(self.dealerHand)
+        logger.info(hand)
         
         
   #A hand should be removed right when they bust... but python lists and for loops can be funky so just do it here
   def removeBustHands(self, hands: List[Hand]):
     for hand in hands[:]:
       if(hand.isBust()):
-        hand.processLose()
+        hand.processLose(True)
         hands.remove(hand)
         
   def playDealerHand(self):
+    logger.info('\nDealer\'s turn')
+    logger.info(self.dealerHand)
     while(self.dealerHand.getSoftScore() < 17):
       self.hit(self.dealerHand)
+      logger.info(self.dealerHand)
+      
       
   def calculateScoresAndPayout(self, hands: List[Hand]):
     
     if(self.dealerHand.isBust()):
+      logger.info('Dealer Bust!')
       for hand in hands:
         hand.processWin()
     else:
@@ -158,18 +171,18 @@ class BlackjackTable:
           hand.processLose()
           
   def printHands(self, hands: List[Hand]):
-    print(self.dealerHand)
+    logger.info(self.dealerHand)
     for hand in hands:
-      print(hand)
+      logger.info(hand)
       
       
 if(__name__ == "__main__"):
-  table = BlackjackTable()
-  player1 = Player("player 1", 100000)
-  player2 = Player("player 2", 100000)
-  for i in range(1):
-    table.playRound([player1, player2])
-  print(player1.printStats())
-  print(player2.printStats())
+  logging.basicConfig(level=logging.INFO,  format='%(message)s')
+  logger = logging.getLogger(__name__)
+  table = Table()
+  player1 = Player("player 1", bankroll=100000, autobet=True)
+  for i in range(5):
+    table.playRound([player1])
+  logger.info(player1.printStats())
 
 

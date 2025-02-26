@@ -1,3 +1,3 @@
 from .Card import Card
-from .BlackjackHand import Hand
+from .Hand import Hand
 from .Player import Player

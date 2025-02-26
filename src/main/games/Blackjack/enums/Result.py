@@ -5,6 +5,7 @@ class Result(Enum):
   WIN = 2
   LOSS = 3
   PUSH = 4
+  BUST = 5  
   
   def __str__(self):
-    return ["BLACKJACK", "WIN", "LOSS", "PUSH"][self.value - 1]
+    return ["BLACKJACK", "WIN", "LOSS", "PUSH", "BUST"][self.value - 1]

@@ -1,15 +1,21 @@
+from typing import List
 from games.Blackjack.enums import Actions, Result
 
+import logging
+logger = logging.getLogger(__name__)
+
 '''
-Maybe this should be an agent instead? Especially now that the hands and splithand count are being moved to Round clss
+I think an Agent/NN could just inherit from this class and overload the askForBet and getAction methods
 '''
 class Player:
-  def __init__(self, name, bankroll=0):
+  def __init__(self, name, bankroll=0, autobet=False):
     self.name: str = name 
     self.bankroll: int = bankroll
+    self.autobet = autobet
     self.wins: int = 0
     self.losses: int = 0
     self.pushes: int = 0
+    self.busts: int = 0
 
   def __repr__(self):
     return "{}: {}-{}-{} Remaining bankroll: {}".format(self.name, self.wins, self.losses, self.pushes, self.bankroll)
@@ -23,20 +29,25 @@ class Player:
   def printStats(self):
     totalHands = self.wins + self.losses + self.pushes
     winLossHands = totalHands - self.pushes
+    logger.info('\n' +self.name + " Stats:\n")
     output = ""
-    output += "{}: {}-{}-{} / {} \n".format(self.name, self.wins, self.losses, self.pushes, totalHands )
-    output += "{:.3%}-{:.3%}-{:.3%}\n".format(self.wins/totalHands, self.losses/totalHands, self.pushes/totalHands)
+    output +="{W:^9}-{L:^9}-{P:^9}/{T:^9}\n".format(W="Wins", L="Loss",P="Push",T="Total")
+    output +="{W:^9}-{L:^9}-{P:^9}/{T:^9}\n".format(W=self.wins, L=self.losses, P=self.pushes, T=totalHands) 
+    output += "{:^9.2%}-{:^9.2%}-{:^9.2%}\n".format(self.wins/totalHands, self.losses/totalHands, self.pushes/totalHands)
     if(winLossHands > 0):
-      output += "Excluding ties\n"
+      output += "\nExcluding ties\n"
       output +="{W:^9}-{L:^9}/{T:^9}\n".format(W="Wins", L="Loss",T="Total")
       output += "{W:^9}-{L:^9}/{T:^9}\n".format(W=self.wins, L=self.losses,T=winLossHands)
-      output += "{Wins:.2%}-{Losses:.2%}\n".format(Wins=self.wins/winLossHands,Losses=self.losses/winLossHands)
-    print(output)
+      output += "{Wins:^9.2%}-{Losses:^9.2%}\n".format(Wins=self.wins/winLossHands, Losses=self.losses/winLossHands)
+    logger.info(output)
     
   def hasEnoughFunds(self, amount):
     return amount <= self.bankroll    
     
   def askForBet(self):
+    if(self.autobet):
+      return 10
+    logger.info('\n')
     validBet = False
     betAmount = 0
     while(not validBet):
@@ -44,17 +55,31 @@ class Player:
         betAmount = int(input("Your Funds: " + str(self.bankroll) + "\nHow much do you want to bet? "))
         validBet = self.hasEnoughFunds(betAmount) 
       except:
-        print("Invalid Bet. Please enter a number")
+        logger.info("Invalid Bet. Please enter a number")
         validBet = False
     self.bankroll -= betAmount
     return betAmount
 
-  def askForDecision(self, optionsText, splitOptionAvailable, doubleDownOptionAvailable):
-    choice = input(optionsText).upper()
-    while not self.isValidUserAction(choice, splitOptionAvailable, doubleDownOptionAvailable):
-      # Maybe we toggle user input or NN input here with a flag or something
+  '''
+  Override this method if you want to utilize a NN model.
+  Something like 
+  def askForDecision(self, availableOptions: List[Actions]):
+    return model.predict(availableOptions)
+  Hmm might need to ensure that the model is choosing valid actions
+  also it might want more information
+  '''
+  def getAction(self, availableOptions: List[Actions]):
+    optionsText = "[S]tand"
+    if(availableOptions.__contains__(Actions.H)):
+      optionsText += " or [H]it"
+    if(availableOptions.__contains__(Actions.D)):
+      optionsText += " or [D]oubledown"
+    if(availableOptions.__contains__(Actions.T)):
+      optionsText += " or Spli[T]"
+    optionsText += ": "
+    choice = input('\n' + optionsText).upper()
+    while not self.isValidUserAction(choice, availableOptions):
       choice = input(optionsText).upper()
-      # choice = getModelPrediction(dealer, hand)
     if choice == 'H':
       return Actions.H
     elif choice == 'S':
@@ -64,11 +89,11 @@ class Player:
     elif choice == 'T':
       return Actions.T
     else:
-      print("Invalid Input which shouldn't be possible")
+      logger.info("Invalid Input which shouldn't be possible")
   
-  def isValidUserAction(self, choice, splitOptionAvailable, doubleDownOptionAvailable):
-    valid =  choice == 'H' or choice == 'S' or (splitOptionAvailable and choice == 'T') or (doubleDownOptionAvailable and choice == 'D')
-    if not valid: print('Invalid Input. Try again')
+  def isValidUserAction(self, choice: str, availableOptoins: List[Actions]):
+    valid =  choice == 'H' or choice == 'S' or (choice == 'T' and availableOptoins.__contains__(Actions.T)) or (choice == 'D' and availableOptoins.__contains__(Actions.D))
+    if not valid: logger.info('Invalid Input. Try again')
     return valid
   
   def recievePayout(self, amount):
@@ -83,3 +108,6 @@ class Player:
       self.losses += 1
     elif(result == Result.PUSH):
       self.pushes += 1
+    elif(result == Result.BUST):
+      self.busts += 1
+      self.losses += 1
