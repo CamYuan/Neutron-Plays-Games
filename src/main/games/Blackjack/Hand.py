@@ -35,18 +35,22 @@ class Hand:
 
   def addCard(self, card: Card):
     self._cards.append(card)
-    self.__updateHardScore(card)
-    self.__updateSoftScore(card)
+    self.__updateHardScore()
+    self.__updateSoftScore()
       
   #Softscore can 'bust' in which case the class will default to the hard score
-  def __updateSoftScore(self, card: Card):
-    if(self.__softScore + card.getSoftValue() <= 21):
-      self.__softScore += card.getSoftValue()
-    else:
-      self.__softScore += card.getHardValue()
+  def __updateSoftScore(self):
+    self.__softScore = 0
+    for card in self._cards:
+      if(self.__softScore + card.getSoftValue() <= 21):
+        self.__softScore += card.getSoftValue()
+      else:
+        self.__softScore += card.getHardValue()
   
-  def __updateHardScore(self, card: Card):
-    self.__hardScore += card.getHardValue()
+  def __updateHardScore(self):
+    self.__hardScore = 0
+    for card in self._cards:
+      self.__hardScore += card.getHardValue()
     
   #Soft score will always be better than hardscore unless it's a soft bust    
   def getSoftScore(self):
@@ -70,8 +74,8 @@ class Hand:
       return True
   
   def doubleDown(self):
-    self.bet *= 2
     self.player.bankroll -= self.bet
+    self.bet *= 2
     self.__doubledDown = True
   
   '''
@@ -91,12 +95,13 @@ class Hand:
     
   def splitHand(self) -> 'Hand':
     if self._cards[0].value() == 1:
-        self.__splitFromAces = True
+      self.__splitFromAces = True
+    self.player.bankroll -= self.bet
     newHand = Hand(player=self.player, bet=self.bet, splitAces=self.__splitFromAces)
     card = self._cards.pop()
     newHand.addCard(card)
-    self.__softScore -= card.getSoftValue()
-    self.__hardScore -= card.getHardValue()
+    self.__updateSoftScore()
+    self.__updateHardScore()
     return newHand
   
   def isBust(self):
@@ -113,27 +118,34 @@ class Hand:
         actionOptions.append(Actions.D)
     return actionOptions
   
-  def processBlackjack(self):
+  def processBlackjack(self) -> Result:
     self.player.recievePayout(self.bet * 2.5)
     self.player.finalizeHand(Result.BLACKJACK)
     logger.info("%s Blackjack!", str(self))
+    return Result.BLACKJACK
 
-  def processWin(self):
+  def processWin(self) -> Result:
     self.player.recievePayout(self.bet * 2)
     self.player.finalizeHand(Result.WIN)
     logger.info( "%s Win!", str(self))
+    return Result.WIN
   
-  def processLose(self, bust=False):
-    if(bust):
-      self.player.finalizeHand(Result.BUST)
-    else:
-      self.player.finalizeHand(Result.LOSS)
+  def processLose(self) -> Result:
+    self.player.finalizeHand(Result.LOSS)
     logger.info("%s Loss!", str(self))
+    return Result.LOSS
   
-  def processPush(self):
+  def processBust(self) -> Result:
+    self.player.finalizeHand(Result.BUST)
+    logger.info("%s Bust!", str(self))
+    return Result.BUST
+    
+  
+  def processPush(self) -> Result:
     self.player.recievePayout(self.bet)
     self.player.finalizeHand(Result.PUSH)
     logger.info("%s Push!", str(self))
+    return Result.PUSH
 
   
   

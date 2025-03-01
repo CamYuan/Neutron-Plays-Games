@@ -25,6 +25,7 @@ class Table:
     self.dealerHand: Hand  = None
     self.playerSplitCounts = {}
     self.roundCounter = 0
+    self.hands: List[Hand] = []
   
   def loadShoe(self, numberOfDecks) -> List[Card]:
     shoe = []
@@ -60,6 +61,7 @@ class Table:
   def initializeRound(self, players: List[Player]) -> List[Hand]:
     hands = []
     for player in players:
+      logger.info(player)
       bet = player.askForBet()
       hands.append(Hand(player, bet))
       self.playerSplitCounts[hash(player)] = 0
@@ -94,7 +96,8 @@ class Table:
           hand.processPush()
         else:
           hand.processLose()
-      self.reset() #round over
+      hands.clear()
+      self.reset()   
     else:
       for hand in hands[:]:
         if(hand.hasBlackjack()):
@@ -106,18 +109,19 @@ class Table:
     self.playerSplitCounts = {}
     if(self.isShuffleTime):
       self.shoe = self.loadShoe(self.numDecks)
+      self.isShuffleTime = False
     
     
   def playHands(self, hands: List[Hand]):
     for index, hand in enumerate(hands):
       logger.info('\n'+hand.player.name + '\'s turn')  
       #After a split, the second hand won't get a card until the first hand is done
-      logger.info(self.dealerHand)
-      logger.info(hand)
       choice = ''
       while(choice != Actions.S):
         if len(hand._cards) < 2: 
           self.hit(hand)
+        logger.info(self.dealerHand)
+        logger.info(hand)
         actionOptions = hand.getActionOptions(self.playerSplitCounts[hash(hand.player)]) 
         if(len(actionOptions) == 1):
           choice = actionOptions[0] #forced stand
@@ -136,16 +140,16 @@ class Table:
         else: #Actions.S
           #Choice will automatically be stand if Aces were split or hand is bust
           'No op' #intentionally empty
-        logger.info(self.dealerHand)
-        logger.info(hand)
+      logger.info(hand)
+
         
         
   #A hand should be removed right when they bust... but python lists and for loops can be funky so just do it here
   def removeBustHands(self, hands: List[Hand]):
     for hand in hands[:]:
       if(hand.isBust()):
-        hand.processLose(True)
         hands.remove(hand)
+        hand.processBust()
         
   def playDealerHand(self):
     logger.info('\nDealer\'s turn')
@@ -155,8 +159,7 @@ class Table:
       logger.info(self.dealerHand)
       
       
-  def calculateScoresAndPayout(self, hands: List[Hand]):
-    
+  def calculateScoresAndPayout(self, hands: List[Hand]) -> Result:
     if(self.dealerHand.isBust()):
       logger.info('Dealer Bust!')
       for hand in hands:
@@ -181,6 +184,24 @@ if(__name__ == "__main__"):
   logger = logging.getLogger(__name__)
   table = Table()
   player1 = Player("player 1", bankroll=100000, autobet=True)
+  table.shoe.clear()
+  table.shoe.append(Card(Rank.SIX, Suits.HEARTS))
+  table.shoe.append(Card(Rank.SIX, Suits.HEARTS))
+  table.shoe.append(Card(Rank.SIX, Suits.HEARTS))
+  table.shoe.append(Card(Rank.SIX, Suits.HEARTS))
+  table.shoe.append(Card(Rank.SIX, Suits.HEARTS))
+  table.shoe.append(Card(Rank.SIX, Suits.HEARTS))
+  table.shoe.append(Card(Rank.SIX, Suits.HEARTS))
+  
+  table.shoe.append(Card(Rank.TEN, Suits.HEARTS))
+  table.shoe.append(Card(Rank.FIVE, Suits.HEARTS))
+  
+  table.shoe.append(Card(Rank.TEN, Suits.HEARTS))
+  table.shoe.append(Card(Rank.FIVE, Suits.HEARTS))
+  table.shoe.append(Card(Rank.EIGHT, Suits.HEARTS))
+  table.shoe.append(Card(Rank.ACE, Suits.HEARTS))
+  table.shoe.append(Card(Rank.EIGHT, Suits.HEARTS))
+  table.shoe.append(Card(Rank.ACE, Suits.HEARTS))
   for i in range(5):
     table.playRound([player1])
   logger.info(player1.printStats())

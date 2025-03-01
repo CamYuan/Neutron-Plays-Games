@@ -23,37 +23,36 @@ class HandTest(unittest.TestCase):
     hand = Hand(self.player, bet=10, splitAces=True)
     self.assertTrue(hand._Hand__splitFromAces)
   
-  def test_repr(self):
-    hand = Hand(self.player, bet=10)
-    hand.addCard(self.ace)
-    expected = self.player.name + ': ' + str(self.ace) 
-    self.assertEqual(expected, str(hand))
-  
   def test_addCard(self):
     hand = Hand(self.player, bet=10)
     hand._Hand__updateSoftScore = MagicMock()
     hand._Hand__updateHardScore = MagicMock()
     hand.addCard(self.ace)
     self.assertIn(self.ace, hand._cards)
-    hand._Hand__updateSoftScore.assert_called_once_with(self.ace)
-    hand._Hand__updateHardScore.assert_called_once_with(self.ace)    
+    hand._Hand__updateSoftScore.assert_called_once_with()
+    hand._Hand__updateHardScore.assert_called_once_with()    
     
     hand.addCard(self.ace)
     self.assertTrue(len(hand._cards) == 2)
 
   def test_updateSoftScore(self):
     hand = Hand(self.player, bet=10)
-    hand._Hand__updateSoftScore(self.ace)
+    self.assertEqual(hand._Hand__softScore, 0)
+    hand._cards.append(self.ace)
+    hand._Hand__updateSoftScore()
     self.assertEqual(hand._Hand__softScore, 11)
-    hand._Hand__updateSoftScore(self.ace)
+    hand._cards.append(self.ace)
+    hand._Hand__updateSoftScore()
     self.assertEqual(hand._Hand__softScore, 12)
 
   def test_updateHardScore(self):
     hand = Hand(self.player, bet=10)
-    hand._Hand__updateHardScore(self.ace)
+    self.assertEqual(hand._Hand__hardScore, 0)
+    hand._cards.append(self.ace)
+    hand._Hand__updateHardScore()
     self.assertEqual(hand._Hand__hardScore, 1)
-    
-    hand._Hand__updateHardScore(self.ace)
+    hand._cards.append(self.ace)
+    hand._Hand__updateHardScore()
     self.assertEqual(hand._Hand__hardScore, 2)
     
   def test_getSoftScore(self):

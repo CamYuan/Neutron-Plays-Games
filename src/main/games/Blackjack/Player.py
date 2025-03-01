@@ -27,6 +27,7 @@ class Player:
     return isinstance(other, Player) and self.name == other.name
   
   def printStats(self):
+    logger.info(self)
     totalHands = self.wins + self.losses + self.pushes
     winLossHands = totalHands - self.pushes
     logger.info('\n' +self.name + " Stats:\n")
@@ -46,6 +47,7 @@ class Player:
     
   def askForBet(self):
     if(self.autobet):
+      self.bankroll -= 10
       return 10
     logger.info('\n')
     validBet = False
@@ -111,3 +113,10 @@ class Player:
     elif(result == Result.BUST):
       self.busts += 1
       self.losses += 1
+   
+  #used for calculating reward   
+  def resetScore(self):
+    self.wins = 0
+    self.losses = 0
+    self.pushes = 0
+    self.busts = 0
