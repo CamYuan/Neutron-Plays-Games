@@ -25,7 +25,6 @@ class Table:
     self.dealerHand: Hand  = None
     self.playerSplitCounts = {}
     self.roundCounter = 0
-    self.hands: List[Hand] = []
   
   def loadShoe(self, numberOfDecks) -> List[Card]:
     shoe = []
@@ -56,7 +55,7 @@ class Table:
       self.dealerHand.dealer = False #expose the dealer hand
       self.playDealerHand()
       self.calculateScoresAndPayout(hands)
-    self.reset()    
+    self.__reset()    
   
   def initializeRound(self, players: List[Player]) -> List[Hand]:
     hands = []
@@ -97,14 +96,14 @@ class Table:
         else:
           hand.processLose()
       hands.clear()
-      self.reset()   
+      self.__reset()   
     else:
       for hand in hands[:]:
         if(hand.hasBlackjack()):
           hand.processBlackjack()
           hands.remove(hand) 
           
-  def reset(self):
+  def __reset(self):
     self.dealerHand: Hand  = None
     self.playerSplitCounts = {}
     if(self.isShuffleTime):
@@ -177,6 +176,9 @@ class Table:
     logger.info(self.dealerHand)
     for hand in hands:
       logger.info(hand)
+  
+  def getDealerUpCard(self):
+    return self.dealerHand._cards[1]
       
       
 if(__name__ == "__main__"):

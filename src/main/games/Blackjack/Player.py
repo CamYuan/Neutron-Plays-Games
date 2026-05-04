@@ -114,9 +114,10 @@ class Player:
       self.busts += 1
       self.losses += 1
    
-  #used for calculating reward   
-  def resetScore(self):
+  # used for calculating reward for NN. Should never get called in a normal game
+  def __reset(self):
     self.wins = 0
     self.losses = 0
     self.pushes = 0
     self.busts = 0
+    self.bankroll = 100
